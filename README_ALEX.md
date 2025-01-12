@@ -65,10 +65,22 @@ __Desbloquear (unlock):__
 
 
 ## Semáforos
+Um semáforo é uma variável inteira que:
+- É inicializada com um valor que representa o número de recursos disponíveis.
+- Possui opreções para __diminuir__(wait) ou __aumentar__ (post).
+(VERIFICAR DE NOVO)
+
+### Estados do Semáforo
+O semáforo tem os seguintes estados:
+- __Positivo:__ 
+- __Zero:__ 
+- __Negativo (Valor apenas teórico):__ Indica quantos threads/processos estão em espera para aceder aos recursos.
 
 ## Variáveis de condição
 
+
 ## Monitores
+
 
 
 
