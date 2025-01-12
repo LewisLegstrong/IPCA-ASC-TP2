@@ -19,3 +19,4 @@ Each process will have
 
 FIFO implementation: https://www.geeksforgeeks.org/named-pipe-fifo-example-c-program/
 
+valgrind: https://www.cs.tufts.edu/cs/40/docs/valgrind.html
