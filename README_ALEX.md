@@ -47,6 +47,22 @@ Constitui uma sequência de instruções que não pode ser acedida em simultâne
 Existem diferentes mecanismos de sincronização que asseguram que apenas uma unidade de execução possa aceder à secção crítica de cada vez.
 
 ## Mutex
+__Mutex__ (__Mutual Exclusion__, ou __Exclusão Mútua__) é um dos mecanismos acima mencionados. O mutex funciona como uma espécie de __"cadeado"__, ou seja, quando um thread pretende entrar numa secção crítica, este deve bloquear o mutex antes de aceder ao recurso, para que desta forma, se outro thread tentar aceder a este recurso o mutex não o permitir.
+
+### Estados do Mutex
+O mutex tem apenas dois estados:
+- __Desbloqueado (Unlocked):__ O recurso protegido pelo mutex está livre para ser acedido
+
+__Bloqueado (Locked):__ O recurso está em uso e outros threads necessitam de aguardar que o mutex seja desbloqueado.
+
+### Como funciona o lock e o unlock?
+__Bloquear (lock):__
+- O thread solicita o bloqueio do mutex antes de entrar na secção crítica.
+- Se o mutex já se encontrar bloqueado, o thread será colocado em espera até que o mutex seja desbloqueado.
+
+__Desbloquear (unlock):__ 
+- Após terminar o acesso ao recurso, o thread desbloqueia o mutex, permitindo assim que outros thread acessem o recurso.
+
 
 ## Semáforos
 
