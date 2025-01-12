@@ -3,37 +3,76 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <stdlib.h>
+#include <pthread.h>
 
-int main(int argc, char *argv[])
-{
-    int pid_filho;                                  // Identificador do processo filho
-    int pid_filho2;
-    pid_filho = fork();                             // Replicação do processo
-    
-    if(pid_filho < 0) {                             // Se o fork() retornou erro
-        perror("Error: ");
-        return -1;
-    }
-    else if(pid_filho > 0) {                        // Se é o processo pai
-        pid_filho2 = fork();                        // Replicação do processo
-        if(pid_filho2 < 0) {                        // Se o fork() retornou erro
-            perror("Error: ");
-            return -1;
-        }
-        else if(pid_filho2 > 0) {                   // Se é o processo pai
-            wait(0);                                // Aguarda até que o filho conclua a sua execução
-        }
-        else {
-            printf("Son 2");                   // Executa o programa no processo filho 2
-        }
-        wait(0);
-    }
-    else {
-        printf("Son 1");                   // Executa o programa no processo filho 1
-    }
+// #include "fifo_buffer.h"
+#include "sensor_thread.h"
+
+#define MAX_THREAD_COUNT    3
+#define DEBUG
 
 
-    // // Mensagem exibida pelo processo pai, no final da execução
-    printf("Exit\n");
-    return 0;
+int main(int argc, char *argv[]) {
+	pthread_t temp_threads[MAX_THREAD_COUNT];
+	pthread_t humid_threads[MAX_THREAD_COUNT];
+
+	float temp_fifo[15] = {0};
+	float humid_fifo[15] = {0};
+
+	int temp_process;                                  // Identificador do processo filho
+	int humidity_process;
+	temp_process = fork();                             // Replicação do processo
+	
+	if( temp_process < 0 ) {                             // Se o fork() retornou erro
+		perror("Error: ");
+		return -1;
+	}
+	else if( temp_process > 0 ) {                        // Se é o processo pai
+		humidity_process = fork();                       // Replicação do processo
+		if( humidity_process < 0 ) {                     // Se o fork() retornou erro
+			perror("Error: ");
+			return -1;
+		}
+		else if( humidity_process > 0 ) {                // Se é o processo pai
+			wait(0);                                	 // Aguarda até que o filho conclua a sua execução
+		}
+		else {                                  		// Se é o processo filho 2 [HUMIDADE]
+			printf("Son 2");                    		// Executa o programa no processo filho 2
+		}
+		wait(0);
+	}
+	else {                                        		// Se é o processo filho [TEMPERATURA]   
+		#ifdef DEBUG
+			sensor_info_t sensor_count;
+			sensor_count.sensor_reads = 30;
+			sensor_count.sensor_timing = 1;
+			sensor_count.buffer = temp_fifo;
+			
+			pthread_create(&temp_threads[1], NULL, read_sensor_data, (void *) &sensor_count);
+			pthread_join( temp_threads[1], NULL );
+
+		#else
+			sensor_info_t sensor_count [2];
+			sensor_count[0].sensor_reads = MAX_TEMP_SENSOR1_READS;
+			sensor_count[0].sensor_timing = TEMP_SENSOR1_TIMING;
+			sensor_count[0].buffer = &temp_buffer;
+
+			sensor_count[1].sensor_reads = MAX_TEMP_SENSOR2_READS;
+			sensor_count[1].sensor_timing = TEMP_SENSOR2_TIMING;
+			sensor_count[1].buffer = &temp_buffer;
+
+			for (int i = 0; i < MAX_THREAD_COUNT; i++) {
+				if (i < 2) {
+					pthread_create(&temp_threads[i], NULL, read_sensor_data, (void *) &sensor_count[i]);
+				}
+				else {
+					pthread_create(&humid_threads[i], NULL, read_buffer_data, (void *) &temp_buffer);
+				}     
+			}
+		#endif
+	}
+
+	// Mensagem exibida pelo processo pai, no final da execução
+	printf("Exit\n");
+	return 0;
 }
