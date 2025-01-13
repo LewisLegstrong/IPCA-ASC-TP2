@@ -20,6 +20,7 @@ void *read_sensor_data ( void *arg ) {
         int data_for_buffer = rand() % 101;
         add_to_buffer_tail( sensor_info->buffer, data_for_buffer );
         reads++;
+        actuatorActivation(sensor_info->buffer->average, sensor_info->sensor_name);
         #ifdef DEBUG
             file = fopen( filename , "a");
 
@@ -42,7 +43,6 @@ void *read_sensor_data ( void *arg ) {
 
 void *read_buffer_data ( void *arg ) {
     int sum = 0;
-    float average = 0.0;
 
     fifo_buffer_t *fifo = (fifo_buffer_t *) arg;
     
@@ -63,9 +63,8 @@ void *read_buffer_data ( void *arg ) {
         for(int i = 0; i < reads; i++) {
             sum += fifo->buffer[(fifo->end - i - 1 + MAX_BUFFER_SIZE) % MAX_BUFFER_SIZE];
         }
-        average = sum / (float)reads;
-
-        printf("***** Average: %.2f *****\n\n", average);
+        *(fifo->average) = sum / (float)reads;
+        printf("***** Average: %.2f *****\n\n", *(fifo->average));
         fifo->flag = 0; //Reset the flag
         pthread_mutex_unlock(&fifo->mutex);
     }
@@ -81,4 +80,23 @@ void delay_seconds(int seconds) {
     ts.tv_sec = seconds;              // Segundos
     ts.tv_nsec = 0;                   // Nanosegundos
     nanosleep(&ts, NULL);             // Executa o atraso
+}
+
+void actuatorActivation(float *average, int id_sensor) {
+    if(id_sensor == 11 || id_sensor == 12){
+        if(*average < 18){
+            printf("Heater ON.");
+        }
+        else { 
+            printf("Heater OFF.");
+        }
+    }
+    else if(id_sensor == 21 || id_sensor == 22){
+            if(*average > 60){
+            printf("Dehumidifier ON.");
+        }
+        else { 
+            printf("Dehumidifier OFF.");
+        }
+    }
 }

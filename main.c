@@ -20,7 +20,9 @@ int main(int argc, char *argv[]) {
 	int temp_process;                                  // Identificador do processo filho
 	int humidity_process;
 	temp_process = fork();                             // Replicação do processo
-	
+	float temp_average = 0;
+	float humid_average = 0;
+
 	if( temp_process < 0 ) {                             // Se o fork() retornou erro
 		perror("Error: ");
 		return -1;
@@ -36,6 +38,7 @@ int main(int argc, char *argv[]) {
 		}
 		else {                                  		// Se é o processo filho 2 [HUMIDADE]
 			fifo_buffer_t humid_fifo ={
+				.average = &humid_average,
 				.start = 0,
 				.end = 0,
 				.size = 0,
@@ -47,15 +50,15 @@ int main(int argc, char *argv[]) {
 
 			sensor_info_t sensor_count ={
 				.sensor_name = 21,
-				.sensor_reads = 15,
-				.sensor_timing = 1,
+				.sensor_reads = MAX_HUMID_SENSOR1_READS,
+				.sensor_timing = HUMID_SENSORS_TIMING,
 				.buffer = &humid_fifo
 			};
 
 			sensor_info_t sensor_count2 ={
 				.sensor_name = 22,
-				.sensor_reads = 20,
-				.sensor_timing = 2,
+				.sensor_reads = MAX_HUMID_SENSOR2_READS,
+				.sensor_timing = HUMID_SENSORS_TIMING,
 				.buffer = &humid_fifo
 			};
 
@@ -74,6 +77,7 @@ int main(int argc, char *argv[]) {
 		
 	} else {                                        		// Se é o processo filho [TEMPERATURA]   
 		fifo_buffer_t temp_fifo ={
+			.average = &temp_average,
 			.start = 0,
 			.end = 0,
 			.size = 0,
@@ -85,15 +89,15 @@ int main(int argc, char *argv[]) {
 
 		sensor_info_t sensor_count ={
 			.sensor_name = 11,
-			.sensor_reads = 15,
-			.sensor_timing = 1,
+			.sensor_reads = MAX_TEMP_SENSOR1_READS,
+			.sensor_timing = TEMP_SENSOR1_TIMING,
 			.buffer = &temp_fifo
 		};
 
 		sensor_info_t sensor_count2 ={
 			.sensor_name = 12,
-			.sensor_reads = 20,
-			.sensor_timing = 2,
+			.sensor_reads = MAX_TEMP_SENSOR2_READS,
+			.sensor_timing = TEMP_SENSOR2_TIMING,
 			.buffer = &temp_fifo
 		};
 

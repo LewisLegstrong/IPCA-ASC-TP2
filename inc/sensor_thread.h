@@ -40,4 +40,7 @@ void *read_buffer_data ( void *arg );
 /// @param seconds 
 void delay_seconds( int seconds );
 
+///
+void actuatorActivation(float *average, int id_sensor);
+
 #endif // _SENSOR_THREAD_H

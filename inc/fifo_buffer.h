@@ -9,6 +9,7 @@
 
 typedef struct {
     float buffer[MAX_BUFFER_SIZE];
+    float *average;
     int start;
     int end;
     int size;
