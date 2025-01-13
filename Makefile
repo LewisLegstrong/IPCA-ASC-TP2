@@ -58,9 +58,10 @@ OBJ_DIR = $(BUILD_DIR)/obj
 SRCS = $(wildcard $(SRC_DIR)/*.c) main.c
 OBJS = $(patsubst %.c, $(OBJ_DIR)/%.o, $(notdir $(SRCS)))
 TARGET = program
+EXT = .out
 
 # Rules
-all: $(BUILD_DIR) $(OBJ_DIR) $(TARGET)
+all: $(BUILD_DIR) $(OBJ_DIR) $(TARGET)$(EXT)
 
 $(BUILD_DIR):
 	mkdir -p $@
@@ -74,10 +75,10 @@ $(OBJ_DIR)/%.o: %.c
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-$(TARGET): $(OBJS)
+$(TARGET)$(EXT): $(OBJS)
 	$(CC) $(OBJS) -o $@
 
 clean:
-	rm -rf $(BUILD_DIR) $(TARGET)
+	rm -rf $(BUILD_DIR) $(TARGET)$(EXT)
 
 .PHONY: all clean

@@ -1,4 +1,6 @@
 build/
 obj/
+.vscode/
 *.exe
 *.old
+*.out
