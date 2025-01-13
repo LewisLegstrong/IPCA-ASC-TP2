@@ -3,17 +3,21 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
 
-typedef struct fifo_s{
-    float sensor_data;
-    struct fifo_s *next;
+#define MAX_BUFFER_SIZE     15
+
+typedef struct {
+    float buffer[MAX_BUFFER_SIZE];
+    int start;
+    int end;
+    int size;
+    pthread_mutex_t mutex;
+    pthread_cond_t cond;
+    int terminar;
 } fifo_buffer_t;
 
-void add_to_buffer_tail ( float *buffer, float sensor_data );
-void free_list( float *buffer );
-void remove_from_buffer_head ( float *buffer );
-
-void read_buffer( float *buffer );
-int get_list_size( float *buffer );
+void add_to_buffer_tail ( fifo_buffer_t *buffer, float sensor_data );
+void read_buffer ( fifo_buffer_t *buffer );
 
 #endif // _FIFO_BUFFER_H_
