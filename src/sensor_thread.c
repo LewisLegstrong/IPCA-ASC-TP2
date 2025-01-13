@@ -1,6 +1,7 @@
 #include "sensor_thread.h"
 #define DEBUG
 
+
 /* ********************************* */
 /*  ******  THREAD FUNCTIONS  ****** */
 /* ********************************* */
@@ -8,16 +9,33 @@ void *read_sensor_data ( void *arg ) {
     sensor_info_t *sensor_info = (sensor_info_t *) arg;
     int reads = 0;
 
+    #ifdef DEBUG
+        char filename[10];
+        snprintf(filename, 10, "%d", sensor_info->sensor_name);
+        strcat(filename, ".txt");
+        FILE *file ;
+    #endif
+
     for ( int i = 0; i < sensor_info->sensor_reads; i++ ) {
         int data_for_buffer = rand() % 101;
         add_to_buffer_tail( sensor_info->buffer, data_for_buffer );
         reads++;
         #ifdef DEBUG
-            printf(" Added to Sensor %d: %d \n", sensor_info->sensor_name, data_for_buffer);
+            file = fopen( filename , "a");
+
+            if ( file == NULL ) {
+                printf("Error opening file!\n");
+                exit(1);
+            }
+            for ( int i = 0; i < sensor_info->buffer->size; i++ ) {
+                fprintf(file, "Buffer[%d]: %.2f\n", i, sensor_info->buffer->buffer[i]);
+            }
+            fprintf(file, "\nSensor reads: %d\n\n\n", sensor_info->sensor_name, reads);
+            fclose(file);
         #endif
         delay_seconds( sensor_info->sensor_timing );
     }
-
+       
     printf("Sensor %d reads: %d\n", sensor_info->sensor_name, reads);
     pthread_exit(NULL);
 }
@@ -39,15 +57,15 @@ void *read_buffer_data ( void *arg ) {
             pthread_mutex_unlock(&fifo->mutex);
             break;
         }
-
+        
         sum = 0;
         int reads = fifo->size < AVERAGE_MAX_READS ? fifo->size : AVERAGE_MAX_READS;
         for(int i = 0; i < reads; i++) {
             sum += fifo->buffer[(fifo->end - i - 1 + MAX_BUFFER_SIZE) % MAX_BUFFER_SIZE];
         }
         average = sum / (float)reads;
-        printf(" Average: %.2f\n\n", average);
 
+        printf("***** Average: %.2f *****\n\n", average);
         fifo->flag = 0; //Reset the flag
         pthread_mutex_unlock(&fifo->mutex);
     }
