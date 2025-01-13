@@ -5,19 +5,17 @@
 #include <stdlib.h>
 #include <pthread.h>
 
-// #include "fifo_buffer.h"
+#include "fifo_buffer.h"
 #include "sensor_thread.h"
 
 #define MAX_THREAD_COUNT    3
 #define DEBUG
 
 
+
 int main(int argc, char *argv[]) {
 	pthread_t temp_threads[MAX_THREAD_COUNT];
 	pthread_t humid_threads[MAX_THREAD_COUNT];
-
-	float temp_fifo[15] = {0};
-	float humid_fifo[15] = {0};
 
 	int temp_process;                                  // Identificador do processo filho
 	int humidity_process;
@@ -43,13 +41,40 @@ int main(int argc, char *argv[]) {
 	}
 	else {                                        		// Se é o processo filho [TEMPERATURA]   
 		#ifdef DEBUG
-			sensor_info_t sensor_count;
-			sensor_count.sensor_reads = 30;
-			sensor_count.sensor_timing = 1;
-			sensor_count.buffer = temp_fifo;
-			
+			fifo_buffer_t temp_fifo ={
+				.start = 0,
+				.end = 0,
+				.size = 0,
+				.mutex = PTHREAD_MUTEX_INITIALIZER,
+				.cond = PTHREAD_COND_INITIALIZER,
+				.terminar = 0
+			};
+
+			sensor_info_t sensor_count ={
+				.sensor_name = 1,
+				.sensor_reads = 15,
+				.sensor_timing = 1,
+				.buffer = &temp_fifo
+			};
+
+			sensor_info_t sensor_count2 ={
+				.sensor_name = 2,
+				.sensor_reads = 20,
+				.sensor_timing = 2,
+				.buffer = &temp_fifo
+			};
+
+	
 			pthread_create(&temp_threads[1], NULL, read_sensor_data, (void *) &sensor_count);
+			pthread_create(&temp_threads[2], NULL, read_sensor_data, (void *) &sensor_count2);
+			pthread_create(&temp_threads[3], NULL, read_buffer_data, (void *) &temp_fifo);
+
 			pthread_join( temp_threads[1], NULL );
+			pthread_join( temp_threads[2], NULL );
+			temp_fifo.terminar = 1;
+			pthread_cond_broadcast(&temp_fifo.cond);
+			pthread_join( temp_threads[3], NULL );
+
 
 		#else
 			sensor_info_t sensor_count [2];
