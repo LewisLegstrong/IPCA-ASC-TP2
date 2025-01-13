@@ -14,7 +14,8 @@ typedef struct {
     int size;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
-    int terminar;
+    int process_joined;
+    int flag;
 } fifo_buffer_t;
 
 void add_to_buffer_tail ( fifo_buffer_t *buffer, float sensor_data );

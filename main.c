@@ -47,7 +47,8 @@ int main(int argc, char *argv[]) {
 				.size = 0,
 				.mutex = PTHREAD_MUTEX_INITIALIZER,
 				.cond = PTHREAD_COND_INITIALIZER,
-				.terminar = 0
+				.process_joined = 0,
+				.flag = 0
 			};
 
 			sensor_info_t sensor_count ={
@@ -71,7 +72,7 @@ int main(int argc, char *argv[]) {
 
 			pthread_join( temp_threads[1], NULL );
 			pthread_join( temp_threads[2], NULL );
-			temp_fifo.terminar = 1;
+			temp_fifo.process_joined = 1;
 			pthread_cond_broadcast(&temp_fifo.cond);
 			pthread_join( temp_threads[3], NULL );
 

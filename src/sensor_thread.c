@@ -13,8 +13,7 @@ void *read_sensor_data ( void *arg ) {
         add_to_buffer_tail( sensor_info->buffer, data_for_buffer );
         reads++;
         #ifdef DEBUG
-            printf("*****       Added to Sensor %d: %d \n", sensor_info->sensor_name, data_for_buffer);
-            read_buffer( sensor_info->buffer );
+            printf(" Added to Sensor %d: %d \n", sensor_info->sensor_name, data_for_buffer);
         #endif
         delay_seconds( sensor_info->sensor_timing );
     }
@@ -32,30 +31,25 @@ void *read_buffer_data ( void *arg ) {
     while ( 1 ) {
         pthread_mutex_lock(&fifo->mutex);
 
-        while ( fifo->size == 0 && !fifo->terminar ) {
+        while ( !fifo->flag && !fifo->process_joined ) {
             pthread_cond_wait(&fifo->cond, &fifo->mutex);
         }
 
-        if ( fifo->size == 0 && fifo->terminar ) {
+        if ( fifo->process_joined ) {
             pthread_mutex_unlock(&fifo->mutex);
             break;
         }
 
         sum = 0;
-        average = 0.0;
         int reads = fifo->size < AVERAGE_MAX_READS ? fifo->size : AVERAGE_MAX_READS;
         for(int i = 0; i < reads; i++) {
-            sum += fifo->buffer[fifo->end - i];
+            sum += fifo->buffer[(fifo->end - i - 1 + MAX_BUFFER_SIZE) % MAX_BUFFER_SIZE];
         }
-        average = sum / reads;
-        printf(" ** Average: %.2f\n\n", average);
+        average = sum / (float)reads;
+        printf(" Average: %.2f\n\n", average);
 
+        fifo->flag = 0; //Reset the flag
         pthread_mutex_unlock(&fifo->mutex);
-
-        if ( fifo->terminar ) {
-            break;
-        }
-        pthread_cond_wait(&fifo->cond, &fifo->mutex);
     }
     pthread_exit(NULL);
 }

@@ -16,6 +16,8 @@ void add_to_buffer_tail ( fifo_buffer_t *fifo, float sensor_data ) {
         fifo->buffer[MAX_BUFFER_SIZE - 1] = sensor_data;
     }
 
+    read_buffer(fifo);
+    fifo->flag = 1; // Indicate new data is ready
     pthread_cond_signal(&fifo->cond);
     pthread_mutex_unlock(&fifo->mutex);
 }
