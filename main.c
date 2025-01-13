@@ -46,14 +46,14 @@ int main(int argc, char *argv[]) {
 			};
 
 			sensor_info_t sensor_count ={
-				.sensor_name = 1,
+				.sensor_name = 21,
 				.sensor_reads = 15,
 				.sensor_timing = 1,
 				.buffer = &humid_fifo
 			};
 
 			sensor_info_t sensor_count2 ={
-				.sensor_name = 2,
+				.sensor_name = 22,
 				.sensor_reads = 20,
 				.sensor_timing = 2,
 				.buffer = &humid_fifo
@@ -69,67 +69,44 @@ int main(int argc, char *argv[]) {
 			humid_fifo.process_joined = 1;
 			pthread_cond_broadcast(&humid_fifo.cond);
 			pthread_join( humid_threads[3], NULL );
-
 		}
 		wait(0);
-	}
-	else {                                        		// Se é o processo filho [TEMPERATURA]   
-		#ifdef DEBUG
-			// fifo_buffer_t temp_fifo ={
-			// 	.start = 0,
-			// 	.end = 0,
-			// 	.size = 0,
-			// 	.mutex = PTHREAD_MUTEX_INITIALIZER,
-			// 	.cond = PTHREAD_COND_INITIALIZER,
-			// 	.process_joined = 0,
-			// 	.flag = 0
-			// };
+		
+	} else {                                        		// Se é o processo filho [TEMPERATURA]   
+		fifo_buffer_t temp_fifo ={
+			.start = 0,
+			.end = 0,
+			.size = 0,
+			.mutex = PTHREAD_MUTEX_INITIALIZER,
+			.cond = PTHREAD_COND_INITIALIZER,
+			.process_joined = 0,
+			.flag = 0
+		};
 
-			// sensor_info_t sensor_count ={
-			// 	.sensor_name = 1,
-			// 	.sensor_reads = 15,
-			// 	.sensor_timing = 1,
-			// 	.buffer = &temp_fifo
-			// };
+		sensor_info_t sensor_count ={
+			.sensor_name = 11,
+			.sensor_reads = 15,
+			.sensor_timing = 1,
+			.buffer = &temp_fifo
+		};
 
-			// sensor_info_t sensor_count2 ={
-			// 	.sensor_name = 2,
-			// 	.sensor_reads = 20,
-			// 	.sensor_timing = 2,
-			// 	.buffer = &temp_fifo
-			// };
-
-	
-			// pthread_create(&temp_threads[1], NULL, read_sensor_data, (void *) &sensor_count);
-			// pthread_create(&temp_threads[2], NULL, read_sensor_data, (void *) &sensor_count2);
-			// pthread_create(&temp_threads[3], NULL, read_buffer_data, (void *) &temp_fifo);
-
-			// pthread_join( temp_threads[1], NULL );
-			// pthread_join( temp_threads[2], NULL );
-			// temp_fifo.process_joined = 1;
-			// pthread_cond_broadcast(&temp_fifo.cond);
-			// pthread_join( temp_threads[3], NULL );
+		sensor_info_t sensor_count2 ={
+			.sensor_name = 12,
+			.sensor_reads = 20,
+			.sensor_timing = 2,
+			.buffer = &temp_fifo
+		};
 
 
-		#else
-			sensor_info_t sensor_count [2];
-			sensor_count[0].sensor_reads = MAX_TEMP_SENSOR1_READS;
-			sensor_count[0].sensor_timing = TEMP_SENSOR1_TIMING;
-			sensor_count[0].buffer = &temp_buffer;
+		pthread_create(&temp_threads[1], NULL, read_sensor_data, (void *) &sensor_count);
+		pthread_create(&temp_threads[2], NULL, read_sensor_data, (void *) &sensor_count2);
+		pthread_create(&temp_threads[3], NULL, read_buffer_data, (void *) &temp_fifo);
 
-			sensor_count[1].sensor_reads = MAX_TEMP_SENSOR2_READS;
-			sensor_count[1].sensor_timing = TEMP_SENSOR2_TIMING;
-			sensor_count[1].buffer = &temp_buffer;
-
-			for (int i = 0; i < MAX_THREAD_COUNT; i++) {
-				if (i < 2) {
-					pthread_create(&temp_threads[i], NULL, read_sensor_data, (void *) &sensor_count[i]);
-				}
-				else {
-					pthread_create(&humid_threads[i], NULL, read_buffer_data, (void *) &temp_buffer);
-				}     
-			}
-		#endif
+		pthread_join( temp_threads[1], NULL );
+		pthread_join( temp_threads[2], NULL );
+		temp_fifo.process_joined = 1;
+		pthread_cond_broadcast(&temp_fifo.cond);
+		pthread_join( temp_threads[3], NULL );
 	}
 
 	// Mensagem exibida pelo processo pai, no final da execução
